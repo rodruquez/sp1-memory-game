@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const suits = ["♠", "♥", "♦", "♣"];
 const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
@@ -24,68 +24,52 @@ const initialSetup = (deck) => {
     }
     tableau.push(column);
   }
-  return { tableau, stock: deck.slice(index), foundation: { "♠": [], "♥": [], "♦": [], "♣": [] }, moves: 0, score: 0 };
+  return {
+    tableau,
+    stock: deck.slice(index),
+    waste: [],
+    foundation: { "♠": [], "♥": [], "♦": [], "♣": [] },
+    moves: 0,
+    score: 0,
+    time: 0,
+  };
 };
 
 export default function Solitaire() {
   const [deck, setDeck] = useState(generateDeck());
-  const [{ tableau, stock, foundation, moves, score }, setGame] = useState(() => initialSetup(deck));
+  const [{ tableau, stock, waste, foundation, moves, score, time }, setGame] = useState(() => initialSetup(deck));
 
-  const canMoveToFoundation = (card) => {
-    const foundationPile = foundation[card.suit];
-    if (foundationPile.length === 0) {
-      return card.value === "A";
-    }
-    const lastCard = foundationPile[foundationPile.length - 1];
-    return values.indexOf(card.value) === values.indexOf(lastCard.value) + 1;
-  };
-
-  const moveToFoundation = (card, fromCol, cardIndex) => {
-    if (canMoveToFoundation(card)) {
-      const newFoundation = { ...foundation };
-      newFoundation[card.suit].push(card);
-
-      const newTableau = tableau.map((col, idx) =>
-        idx === fromCol ? col.filter((_, i) => i !== cardIndex) : col
-      );
-
-      if (newTableau[fromCol].length && !newTableau[fromCol][newTableau[fromCol].length - 1].flipped) {
-        newTableau[fromCol][newTableau[fromCol].length - 1].flipped = true;
-      }
-
-      setGame({ tableau: newTableau, stock, foundation: newFoundation, moves: moves + 1, score: score + 10 });
-    }
-  };
-
-  const canMoveToTableau = (card, targetCol) => {
-    const targetPile = tableau[targetCol];
-    if (!targetPile.length) {
-      return card.value === "K";
-    }
-    const lastCard = targetPile[targetPile.length - 1];
-    return card.color !== lastCard.color && values.indexOf(card.value) === values.indexOf(lastCard.value) - 1;
-  };
-
-  const moveCardToTableau = (fromCol, cardIndex, toCol) => {
-    const card = tableau[fromCol][cardIndex];
-    if (canMoveToTableau(card, toCol)) {
-      const newTableau = tableau.map((col, idx) =>
-        idx === fromCol ? col.filter((_, i) => i !== cardIndex) : idx === toCol ? [...col, card] : col
-      );
-
-      if (newTableau[fromCol].length && !newTableau[fromCol][newTableau[fromCol].length - 1].flipped) {
-        newTableau[fromCol][newTableau[fromCol].length - 1].flipped = true;
-      }
-
-      setGame({ tableau: newTableau, stock, foundation, moves: moves + 1, score });
-    }
-  };
+  useEffect(() => {
+    const timer = setInterval(() => setGame((g) => ({ ...g, time: g.time + 1 })), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const drawFromStock = () => {
     if (stock.length === 0) return;
     const [drawnCard, ...remainingStock] = stock;
     drawnCard.flipped = true;
-    setGame({ tableau: [...tableau, [drawnCard]], stock: remainingStock, foundation, moves: moves + 1, score });
+    setGame({ tableau, stock: remainingStock, waste: [drawnCard, ...waste], foundation, moves: moves + 1, score, time });
+  };
+
+  const moveToFoundation = (card, from, cardIndex) => {
+    const foundationPile = foundation[card.suit];
+    const validMove =
+      (foundationPile.length === 0 && card.value === "A") ||
+      (foundationPile.length > 0 && values.indexOf(card.value) === values.indexOf(foundationPile[foundationPile.length - 1].value) + 1);
+
+    if (validMove) {
+      const newFoundation = { ...foundation };
+      newFoundation[card.suit].push(card);
+
+      if (from === "waste") {
+        setGame({ tableau, stock, waste: waste.slice(1), foundation: newFoundation, moves: moves + 1, score: score + 10, time });
+      } else {
+        const newTableau = tableau.map((col, idx) =>
+          idx === from ? col.filter((_, i) => i !== cardIndex) : col
+        );
+        setGame({ tableau: newTableau, stock, waste, foundation: newFoundation, moves: moves + 1, score: score + 10, time });
+      }
+    }
   };
 
   const resetGame = () => {
@@ -99,6 +83,7 @@ export default function Solitaire() {
       <div className="flex justify-between w-10/12 max-w-5xl mb-4 text-white">
         <span>Score: {score}</span>
         <span>Moves: {moves}</span>
+        <span>Time: {Math.floor(time / 60)}:{time % 60}</span>
         <button onClick={drawFromStock} className="bg-pink-500 text-white p-1 rounded">Draw Card</button>
         <button onClick={resetGame} className="bg-pink-700 text-white p-1 rounded">New Game</button>
       </div>
@@ -115,17 +100,19 @@ export default function Solitaire() {
             {col.map((card, cardIndex) => (
               <div
                 key={card.id}
-                className={`w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white pixelated cursor-pointer hover:bg-pink-700 transition ${
-                  card.flipped ? "bg-pink-500 text-black" : ""
-                }`}
+                className={`w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white pixelated cursor-pointer hover:bg-pink-700 transition ${card.flipped ? "bg-pink-500 text-black" : ""}`}
                 onDoubleClick={() => moveToFoundation(card, colIndex, cardIndex)}
-                onClick={() => moveCardToTableau(colIndex, cardIndex, (colIndex + 1) % 7)}
               >
                 {card.flipped ? `${card.value}${card.suit}` : ""}
               </div>
             ))}
           </div>
         ))}
+      </div>
+      <div className="mt-4 w-10/12 max-w-5xl">
+        <div className="w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white">
+          {waste.length > 0 ? `${waste[0].value}${waste[0].suit}` : "Waste"}
+        </div>
       </div>
     </div>
   );
