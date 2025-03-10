@@ -31,29 +31,29 @@ export default function Solitaire() {
   const [deck, setDeck] = useState(generateDeck());
   const [{ tableau, stock, foundation, moves, score }, setGame] = useState(() => initialSetup(deck));
 
-  const moveToFoundation = (card) => {
-    if (card.value === "A" || (foundation[card.suit].length && values.indexOf(card.value) === values.indexOf(foundation[card.suit][foundation[card.suit].length - 1].value) + 1)) {
-      const newFoundation = { ...foundation };
-      newFoundation[card.suit].push(card);
-      setGame({ tableau, stock, foundation: newFoundation, moves: moves + 1, score: score + 10 });
+  const canMoveToFoundation = (card) => {
+    const foundationPile = foundation[card.suit];
+    if (foundationPile.length === 0) {
+      return card.value === "A";
     }
+    const lastCard = foundationPile[foundationPile.length - 1];
+    return values.indexOf(card.value) === values.indexOf(lastCard.value) + 1;
   };
 
-  const moveCard = (fromCol, cardIndex, toCol) => {
-    const card = tableau[fromCol][cardIndex];
-    const targetColumn = tableau[toCol];
-    const targetCard = targetColumn[targetColumn.length - 1];
+  const moveToFoundation = (card, fromCol, cardIndex) => {
+    if (canMoveToFoundation(card)) {
+      const newFoundation = { ...foundation };
+      newFoundation[card.suit].push(card);
 
-    if (!targetCard || (card.color !== targetCard.color && values.indexOf(card.value) === values.indexOf(targetCard.value) - 1)) {
-      const newTableau = [...tableau];
-      const movingCards = newTableau[fromCol].splice(cardIndex);
-      newTableau[toCol] = [...newTableau[toCol], ...movingCards];
+      const newTableau = tableau.map((col, idx) =>
+        idx === fromCol ? col.filter((_, i) => i !== cardIndex) : col
+      );
 
       if (newTableau[fromCol].length && !newTableau[fromCol][newTableau[fromCol].length - 1].flipped) {
         newTableau[fromCol][newTableau[fromCol].length - 1].flipped = true;
       }
 
-      setGame({ tableau: newTableau, stock, foundation, moves: moves + 1, score: score + 5 });
+      setGame({ tableau: newTableau, stock, foundation: newFoundation, moves: moves + 1, score: score + 10 });
     }
   };
 
@@ -94,8 +94,7 @@ export default function Solitaire() {
                 className={`w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white pixelated cursor-pointer hover:bg-pink-700 transition ${
                   card.flipped ? "bg-pink-500 text-black" : ""
                 }`}
-                onDoubleClick={() => moveToFoundation(card)}
-                onClick={() => moveCard(colIndex, cardIndex, colIndex === 6 ? 0 : colIndex + 1)}
+                onDoubleClick={() => moveToFoundation(card, colIndex, cardIndex)}
               >
                 {card.flipped ? `${card.value}${card.suit}` : ""}
               </div>
