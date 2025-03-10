@@ -132,7 +132,6 @@ export default function Solitaire() {
                 key={card.id}
                 className={`w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white pixelated cursor-pointer hover:bg-pink-700 transition ${card.flipped ? "bg-pink-500 text-black" : ""}`}
                 onDoubleClick={() => moveToFoundation(card, colIndex, cardIndex)}
-                onClick={() => moveCard(colIndex, cardIndex, (colIndex + 1) % 7)}
               >
                 {card.flipped ? `${card.value}${card.suit}` : ""}
               </div>
