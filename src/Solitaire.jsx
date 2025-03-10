@@ -57,6 +57,30 @@ export default function Solitaire() {
     }
   };
 
+  const canMoveToTableau = (card, targetCol) => {
+    const targetPile = tableau[targetCol];
+    if (!targetPile.length) {
+      return card.value === "K";
+    }
+    const lastCard = targetPile[targetPile.length - 1];
+    return card.color !== lastCard.color && values.indexOf(card.value) === values.indexOf(lastCard.value) - 1;
+  };
+
+  const moveCardToTableau = (fromCol, cardIndex, toCol) => {
+    const card = tableau[fromCol][cardIndex];
+    if (canMoveToTableau(card, toCol)) {
+      const newTableau = tableau.map((col, idx) =>
+        idx === fromCol ? col.filter((_, i) => i !== cardIndex) : idx === toCol ? [...col, card] : col
+      );
+
+      if (newTableau[fromCol].length && !newTableau[fromCol][newTableau[fromCol].length - 1].flipped) {
+        newTableau[fromCol][newTableau[fromCol].length - 1].flipped = true;
+      }
+
+      setGame({ tableau: newTableau, stock, foundation, moves: moves + 1, score });
+    }
+  };
+
   const drawFromStock = () => {
     if (stock.length === 0) return;
     const [drawnCard, ...remainingStock] = stock;
@@ -95,6 +119,7 @@ export default function Solitaire() {
                   card.flipped ? "bg-pink-500 text-black" : ""
                 }`}
                 onDoubleClick={() => moveToFoundation(card, colIndex, cardIndex)}
+                onClick={() => moveCardToTableau(colIndex, cardIndex, (colIndex + 1) % 7)}
               >
                 {card.flipped ? `${card.value}${card.suit}` : ""}
               </div>
