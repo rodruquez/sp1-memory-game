@@ -1,5 +1,6 @@
+
 {
-  "name": "sp1-memory-game",
+  "name": "sp1-pixel-solitaire",
   "version": "1.0.0",
   "private": true,
   "scripts": {
