@@ -52,17 +52,17 @@ export default function Solitaire() {
   };
 
   return (
-    <div className="w-full h-screen bg-green-800 flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold text-yellow-300 mb-6 pixelated">Pixel Solitaire</h1>
-      <button onClick={drawFromStock} className="mb-4 bg-blue-500 text-white p-2 rounded">Draw Card</button>
-      <div className="grid grid-cols-7 gap-4 w-11/12 max-w-6xl">
+    <div className="w-full h-screen bg-black flex flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold text-pink-500 mb-4 pixelated">Pixel Solitaire</h1>
+      <button onClick={drawFromStock} className="mb-4 bg-pink-500 text-white p-1 rounded">Draw Card</button>
+      <div className="grid grid-cols-7 gap-2 w-10/12 max-w-5xl">
         {tableau.map((col, colIndex) => (
-          <div key={colIndex} className="flex flex-col gap-2">
+          <div key={colIndex} className="flex flex-col gap-1">
             {col.map((card, cardIndex) => (
               <div
                 key={card.id}
-                className={`w-20 h-28 border-2 border-gray-500 rounded-md flex items-center justify-center text-2xl bg-gray-900 text-white pixelated cursor-pointer hover:bg-gray-700 transition ${
-                  card.flipped ? "bg-yellow-500 text-black" : ""
+                className={`w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white pixelated cursor-pointer hover:bg-pink-700 transition ${
+                  card.flipped ? "bg-pink-500 text-black" : ""
                 }`}
                 onClick={() => flipCard(colIndex, cardIndex)}
               >
