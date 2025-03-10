@@ -56,13 +56,19 @@ export default function Solitaire() {
     setGame({ tableau: [...tableau, [drawnCard]], stock: remainingStock, foundation, moves: moves + 1, score });
   };
 
+  const resetGame = () => {
+    const newDeck = generateDeck();
+    setGame(initialSetup(newDeck));
+  };
+
   return (
     <div className="w-full h-screen bg-black flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold text-pink-500 mb-4 pixelated">Pixel Solitaire</h1>
       <div className="flex justify-between w-10/12 max-w-5xl mb-4 text-white">
-        <span>Skor: {score}</span>
-        <span>Hamleler: {moves}</span>
-        <button onClick={drawFromStock} className="bg-pink-500 text-white p-1 rounded">Kart Çek</button>
+        <span>Score: {score}</span>
+        <span>Moves: {moves}</span>
+        <button onClick={drawFromStock} className="bg-pink-500 text-white p-1 rounded">Draw Card</button>
+        <button onClick={resetGame} className="bg-pink-700 text-white p-1 rounded">New Game</button>
       </div>
       <div className="grid grid-cols-7 gap-2 w-10/12 max-w-5xl">
         {tableau.map((col, colIndex) => (
