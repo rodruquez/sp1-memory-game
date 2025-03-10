@@ -1,8 +1,9 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const generateCards = () => {
-  const symbols = ['🍎', '🍌', '🍇', '🍉', '🍒', '🍓'];
+  const symbols = ["🍎", "🍌", "🍇", "🍉", "🍒", "🍓", "🍍", "🥝"];
   const pairedSymbols = [...symbols, ...symbols];
   return pairedSymbols
     .sort(() => Math.random() - 0.5)
@@ -58,24 +59,24 @@ export default function MemoryGame() {
   };
 
   return (
-    <div className="p-4 flex flex-col items-center gap-4">
-      <h1 className="text-3xl font-bold">Memory Game with SP1 Logic</h1>
-      <div className="grid grid-cols-4 gap-4">
+    <div className="w-full h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-purple-700">
+      <h1 className="text-4xl font-extrabold text-white mb-6 drop-shadow-lg">Professional Memory Game</h1>
+      <div className="grid grid-cols-4 gap-6 w-3/4 max-w-4xl">
         {cards.map((card) => (
-          <div
+          <Card
             key={card.id}
-            className={`w-16 h-16 flex items-center justify-center text-2xl cursor-pointer ${
-              card.flipped || card.matched ? 'bg-green-200' : 'bg-gray-300'
-            }`}
+            className={`w-full aspect-square flex items-center justify-center text-4xl cursor-pointer transition-transform duration-500 ease-in-out transform ${
+              card.flipped || card.matched ? "rotate-y-0 bg-green-200" : "rotate-y-180 bg-gray-800"
+            } rounded-xl shadow-lg text-white`}
             onClick={() => flipCard(card.id)}
           >
-            {card.flipped || card.matched ? card.symbol : '❓'}
-          </div>
+            <CardContent>{card.flipped || card.matched ? card.symbol : "❓"}</CardContent>
+          </Card>
         ))}
       </div>
-      <p className="text-xl">Score: {score}</p>
-      {completed && <p className="text-2xl font-semibold text-green-500">You Won!</p>}
-      <button onClick={restartGame}>Restart Game</button>
+      <div className="mt-8 text-white text-xl">Score: {score}</div>
+      {completed && <div className="mt-4 text-2xl font-bold text-yellow-400 animate-bounce">🎉 Congratulations, You Won! 🎉</div>}
+      <Button onClick={restartGame} className="mt-6 px-6 py-2 bg-purple-600 hover:bg-purple-800 text-white rounded-lg shadow-lg transition duration-300">Restart Game</Button>
     </div>
   );
 }
