@@ -31,6 +31,14 @@ export default function Solitaire() {
   const [deck, setDeck] = useState(generateDeck());
   const [{ tableau, stock, foundation, moves, score }, setGame] = useState(() => initialSetup(deck));
 
+  const moveToFoundation = (card) => {
+    if (card.value === "A" || (foundation[card.suit].length && values.indexOf(card.value) === values.indexOf(foundation[card.suit][foundation[card.suit].length - 1].value) + 1)) {
+      const newFoundation = { ...foundation };
+      newFoundation[card.suit].push(card);
+      setGame({ tableau, stock, foundation: newFoundation, moves: moves + 1, score: score + 10 });
+    }
+  };
+
   const moveCard = (fromCol, cardIndex, toCol) => {
     const card = tableau[fromCol][cardIndex];
     const targetColumn = tableau[toCol];
@@ -70,6 +78,13 @@ export default function Solitaire() {
         <button onClick={drawFromStock} className="bg-pink-500 text-white p-1 rounded">Draw Card</button>
         <button onClick={resetGame} className="bg-pink-700 text-white p-1 rounded">New Game</button>
       </div>
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        {Object.entries(foundation).map(([suit, cards]) => (
+          <div key={suit} className="w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white">
+            {cards.length ? `${cards[cards.length - 1].value}${suit}` : suit}
+          </div>
+        ))}
+      </div>
       <div className="grid grid-cols-7 gap-2 w-10/12 max-w-5xl">
         {tableau.map((col, colIndex) => (
           <div key={colIndex} className="flex flex-col gap-1">
@@ -79,6 +94,7 @@ export default function Solitaire() {
                 className={`w-16 h-24 border-2 border-white rounded-md flex items-center justify-center text-lg bg-black text-white pixelated cursor-pointer hover:bg-pink-700 transition ${
                   card.flipped ? "bg-pink-500 text-black" : ""
                 }`}
+                onDoubleClick={() => moveToFoundation(card)}
                 onClick={() => moveCard(colIndex, cardIndex, colIndex === 6 ? 0 : colIndex + 1)}
               >
                 {card.flipped ? `${card.value}${card.suit}` : ""}
